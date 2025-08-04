@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Cheques</title>
+    <title>Generador de Cheques - Banco de Chile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
@@ -294,10 +294,10 @@
             <div class="preview-section">
                 <h3>ℹ️ Instrucciones</h3>
                 <div class="alert alert-info">
-                    <strong>Cómo usar:</strong> Selecciona el cheque inicial, agrega personas con sus montos, y genera el PDF para imprimir sobre tu plantilla preimpresa.
+                    <strong>Cómo usar:</strong> Selecciona el cheque inicial, agrega personas con sus montos, y genera el PDF. Si tienes más personas que cheques disponibles, se crearán múltiples páginas automáticamente.
                 </div>
                 <div class="alert alert-warning">
-                    <strong>Importante:</strong> Asegúrate de que la fecha esté correcta y verifica los montos antes de imprimir.
+                    <strong>Múltiples páginas:</strong> Si empiezas desde el cheque 3 y agregas 6 personas, la primera página tendrá los cheques 3 y 4, y la segunda página tendrá los cheques 1, 2, 3 y 4 con las personas restantes.
                 </div>
             </div>
         </div>
@@ -344,20 +344,51 @@
             }
 
             let html = '';
-            chequeData.forEach((item, index) => {
-                const checkIndex = startCheck + index - 1;
-                if (checkIndex < 4) {
+            let currentPage = 1;
+            let personIndex = 0;
+
+            // Calcular distribución por páginas
+            while (personIndex < chequeData.length) {
+                let chequesInPage, startPosition;
+                
+                if (currentPage === 1) {
+                    // Primera página: desde el cheque seleccionado hasta el 4
+                    startPosition = startCheck - 1;
+                    chequesInPage = 4 - startPosition;
+                } else {
+                    // Páginas siguientes: todos los cheques (4 por página)
+                    startPosition = 0;
+                    chequesInPage = 4;
+                }
+
+                // Agregar encabezado de página si hay más de una página
+                if (chequeData.length > chequesInPage || currentPage > 1) {
+                    html += `
+                        <div style="background: #2a5298; color: white; padding: 10px; font-weight: bold; text-align: center;">
+                            📄 PÁGINA ${currentPage}
+                        </div>
+                    `;
+                }
+
+                // Agregar cheques de esta página
+                for (let i = 0; i < chequesInPage && personIndex < chequeData.length; i++) {
+                    const item = chequeData[personIndex];
+                    const checkIndex = startPosition + i;
+                    
                     html += `
                         <div class="cheque-item">
                             <div class="person-info">
                                 <div class="person-name">${item.name}</div>
-                                <div class="person-amount">$${item.amount.toLocaleString('es-CL')} - ${item.amountWords}</div>
+                                <div class="person-amount">${item.amount.toLocaleString('es-CL')} - ${item.amountWords}</div>
                             </div>
                             <div class="cheque-number">${checkNumbers[checkIndex]}</div>
                         </div>
                     `;
+                    personIndex++;
                 }
-            });
+
+                currentPage++;
+            }
 
             listElement.innerHTML = html;
         }
@@ -458,29 +489,54 @@
                 { y: 258 }   // Cuarto cheque
             ];
 
-            chequeData.forEach((item, index) => {
-                const checkIndex = startCheck + index - 1;
-                if (checkIndex >= 4) return; // No más de 4 cheques por página
+            let currentPage = 0;
+            let personIndex = 0;
 
-                const pos = chequePositions[checkIndex];
+            while (personIndex < chequeData.length) {
+                if (currentPage > 0) {
+                    doc.addPage();
+                }
+
+                // Determinar cuántos cheques usar en esta página
+                let startPosition, endPosition;
                 
-                // Fecha (posición superior derecha)
-                doc.setFontSize(11);
-                doc.text(formattedDate, 180, pos.y - 15);
-                
-                // Nombre de la persona (línea "PÁGUESE A")
-                doc.setFontSize(12);
-                doc.text(item.name.toUpperCase(), 25, pos.y + 8);
-                
-                // Monto en números (lado derecho)
-                doc.setFontSize(14);
-                doc.text(`$${item.amount.toLocaleString('es-CL')}`, 165, pos.y + 8);
-                
-                // Monto en palabras (línea inferior)
-                doc.setFontSize(11);
-                const wordsText = item.amountWords.toUpperCase();
-                doc.text(wordsText, 25, pos.y + 22);
-            });
+                if (currentPage === 0) {
+                    // Primera página: empezar desde el cheque seleccionado
+                    startPosition = startCheck - 1;
+                    endPosition = 4;
+                } else {
+                    // Páginas siguientes: usar todos los cheques (1-4)
+                    startPosition = 0;
+                    endPosition = 4;
+                }
+
+                // Llenar los cheques disponibles en esta página
+                for (let checkPos = startPosition; checkPos < endPosition && personIndex < chequeData.length; checkPos++) {
+                    const item = chequeData[personIndex];
+                    const pos = chequePositions[checkPos];
+                    
+                    // Fecha (posición superior derecha)
+                    doc.setFontSize(11);
+                    doc.text(formattedDate, 180, pos.y - 15);
+                    
+                    // Nombre de la persona (línea "PÁGUESE A")
+                    doc.setFontSize(12);
+                    doc.text(item.name.toUpperCase(), 25, pos.y + 8);
+                    
+                    // Monto en números (lado derecho)
+                    doc.setFontSize(14);
+                    doc.text(`${item.amount.toLocaleString('es-CL')}`, 165, pos.y + 8);
+                    
+                    // Monto en palabras (línea inferior)
+                    doc.setFontSize(11);
+                    const wordsText = item.amountWords.toUpperCase();
+                    doc.text(wordsText, 25, pos.y + 22);
+                    
+                    personIndex++;
+                }
+
+                currentPage++;
+            }
 
             // Generar el PDF
             doc.save('cheques-banco-chile.pdf');
