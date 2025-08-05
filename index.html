@@ -523,7 +523,14 @@
                     const checkDate = item.date;
             
                     // Convertir fecha a formato dd/mm/yyyy
-                    const date = new Date(checkDate);
+                    let _date = new Date();
+
+                    _date.setTime(Date.parse(checkDate))
+                    let n = 1000 *60* _date.getTimezoneOffset();
+                    _date.setTime(_date.getTime() + n)
+
+                    const date = _date
+                    
                     const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
                     const formattedDay = `${date.getDate().toString().padStart(2, '0')}`;
                     const formattedMonth = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
