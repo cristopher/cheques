@@ -249,10 +249,10 @@
                     <div class="form-group">
                         <label for="startCheck">Número de cheque inicial:</label>
                         <select id="startCheck">
-                            <option value="1">2020EC 0037105 (Primer cheque)</option>
-                            <option value="2">2020EC 0037106 (Segundo cheque)</option>
-                            <option value="3">2020EC 0037107 (Tercer cheque)</option>
-                            <option value="4">2020EC 0037108 (Cuarto cheque)</option>
+                            <option value="1">(Primer cheque)</option>
+                            <option value="2">(Segundo cheque)</option>
+                            <option value="3">(Tercer cheque)</option>
+                            <option value="4">(Cuarto cheque)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -297,7 +297,10 @@
                     <strong>Cómo usar:</strong> Selecciona el cheque inicial, agrega personas con sus montos, y genera el PDF. Si tienes más personas que cheques disponibles, se crearán múltiples páginas automáticamente.
                 </div>
                 <div class="alert alert-warning">
-                    <strong>Múltiples páginas:</strong> Si empiezas desde el cheque 3 y agregas 6 personas, la primera página tendrá los cheques 3 y 4, y la segunda página tendrá los cheques 1, 2, 3 y 4 con las personas restantes.
+                    <strong>Mejoras implementadas:</strong> 
+                    • Margen derecho añadido para mejor impresión<br>
+                    • El monto en palabras se divide automáticamente en 2 líneas si supera 60 caracteres<br>
+                    • Múltiples páginas: Si empiezas desde el cheque 3 y agregas 6 personas, la primera página tendrá los cheques 3 y 4, y la segunda página tendrá los cheques 1, 2, 3 y 4 con las personas restantes.
                 </div>
             </div>
         </div>
@@ -379,7 +382,7 @@
                         <div class="cheque-item">
                             <div class="person-info">
                                 <div class="person-name">${item.name}</div>
-                                <div class="person-amount">${item.amount.toLocaleString('es-CL')} - ${item.amountWords}</div>
+                                <div class="person-amount">$${item.amount.toLocaleString('es-CL')} - ${item.amountWords}</div>
                             </div>
                             <div class="cheque-number">${checkNumbers[checkIndex]}</div>
                         </div>
@@ -407,8 +410,8 @@
             const tens = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
             const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
 
-            if (num === 0) return 'cero pesos';
-            if (num === 100) return 'cien pesos';
+            if (num === 0) return 'cero';
+            if (num === 100) return 'cien';
 
             let result = '';
 
@@ -462,7 +465,7 @@
                 return str.trim();
             }
 
-            return result.trim() + ' pesos';
+            return result.trim();
         }
 
         function generatePDF() {
@@ -481,13 +484,18 @@
             const date = new Date(checkDate);
             const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 
-            // Posiciones para cada cheque (ajustadas según la imagen)
+            // Posiciones para cada cheque (ajustadas con margen derecho)
             const chequePositions = [
-                { y: 28 },   // Primer cheque
-                { y: 98 },  // Segundo cheque  
-                { y: 168 },  // Tercer cheque
-                { y: 238 }   // Cuarto cheque
+                { y: 20 },   // Primer cheque
+                { y: 90 },  // Segundo cheque  
+                { y: 159 },  // Tercer cheque
+                { y: 229 }   // Cuarto cheque
             ];
+
+            // Márgenes y límites de texto
+            const rightMargin = 15; // Margen derecho en mm
+            const maxWidth = 210 - 55 - rightMargin; // Ancho máximo considerando márgenes (210mm - margen izq - margen der)
+            const lineHeight = 4; // Altura entre líneas
 
             let currentPage = 0;
             let personIndex = 0;
@@ -515,22 +523,47 @@
                     const item = chequeData[personIndex];
                     const pos = chequePositions[checkPos];
                     
-                    // Fecha (posición superior derecha)
+                    // Fecha (posición superior derecha, con margen)
                     doc.setFontSize(11);
-                    doc.text(formattedDate, 180, pos.y - 15);
+                    doc.text(formattedDate, 210 - rightMargin - 5, pos.y - 0, { align: 'right' });
                     
                     // Nombre de la persona (línea "PÁGUESE A")
                     doc.setFontSize(12);
-                    doc.text(item.name.toUpperCase(), 25, pos.y + 8);
+                    doc.text(item.name.toUpperCase(), 77, pos.y + 8);
                     
-                    // Monto en números (lado derecho)
+                    // Monto en números (lado derecho, con margen)
                     doc.setFontSize(14);
-                    doc.text(`${item.amount.toLocaleString('es-CL')}`, 165, pos.y + 8);
+                    doc.text(`$${item.amount.toLocaleString('es-CL')}.-`, 210 - rightMargin - 5, pos.y - 10, { align: 'right' });
                     
-                    // Monto en palabras (línea inferior)
+                    // *** SEPARACIÓN DE MONTO EN PALABRAS EN 2 LÍNEAS SI SUPERA 60 CARACTERES ***
                     doc.setFontSize(11);
                     const wordsText = item.amountWords.toUpperCase();
-                    doc.text(wordsText, 25, pos.y + 22);
+                    
+                    // Dividir en 2 líneas si supera 56 caracteres
+                    if (wordsText.length > 56) {
+                        // Buscar el mejor punto de corte (preferiblemente en un espacio)
+                        let cutPoint = 56;
+                        
+                        // Buscar hacia atrás el último espacio antes del carácter 60
+                        for (let i = 56; i >= 30; i--) {
+                            if (wordsText[i] === ' ') {
+                                cutPoint = i;
+                                break;
+                            }
+                        }
+                        
+                        const line1 = wordsText.substring(0, cutPoint).trim();
+                        const line2 = wordsText.substring(cutPoint).trim();
+                        
+                        // Imprimir primera línea
+                        doc.text(line1, 77, pos.y + 15);
+                        // Imprimir segunda línea
+                        doc.text(line2, 65, pos.y + 19);
+                    } else {
+                        // Texto corto, una sola línea
+                        doc.text(wordsText, 75, pos.y + 22);
+                    }
+                    // *** FIN DE LA SEPARACIÓN DE CARACTERES ***
                     
                     personIndex++;
                 }
