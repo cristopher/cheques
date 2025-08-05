@@ -316,6 +316,7 @@
         function addPerson() {
             const name = document.getElementById('personName').value.trim();
             const amount = parseFloat(document.getElementById('amount').value);
+            const fecha = document.getElementById('checkDate').value;
 
             if (!name || !amount || amount <= 0) {
                 alert('Por favor, ingresa un nombre válido y un monto mayor a 0');
@@ -325,6 +326,7 @@
             chequeData.push({
                 name: name,
                 amount: amount,
+                date: fecha,
                 amountWords: numberToWords(amount)
             });
 
@@ -476,16 +478,6 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'letter');
-            
-            const startCheck = parseInt(document.getElementById('startCheck').value);
-            const checkDate = document.getElementById('checkDate').value;
-            
-            // Convertir fecha a formato dd/mm/yyyy
-            const date = new Date(checkDate);
-            const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-            const formattedDay = `${date.getDate().toString().padStart(2, '0')}`;
-            const formattedMonth = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-            const formattedYear = `${date.getFullYear()}`;
 
             // Posiciones para cada cheque (ajustadas con margen derecho)
             const chequePositions = [
@@ -525,6 +517,16 @@
                 for (let checkPos = startPosition; checkPos < endPosition && personIndex < chequeData.length; checkPos++) {
                     const item = chequeData[personIndex];
                     const pos = chequePositions[checkPos];
+
+                    const startCheck = parseInt(document.getElementById('startCheck').value);
+                    const checkDate = item.date;
+            
+                    // Convertir fecha a formato dd/mm/yyyy
+                    const date = new Date(checkDate);
+                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+                    const formattedDay = `${date.getDate().toString().padStart(2, '0')}`;
+                    const formattedMonth = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    const formattedYear = `${date.getFullYear()}`;
                     
                     // Fecha (posición superior derecha, con margen)
                     //doc.setFontSize(11);
