@@ -479,6 +479,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'letter');
 
+            const startCheck = parseInt(document.getElementById('startCheck').value);
+
             // Posiciones para cada cheque (ajustadas con margen derecho)
             const chequePositions = [
                 { y: 22 },   // Primer cheque
@@ -518,7 +520,6 @@
                     const item = chequeData[personIndex];
                     const pos = chequePositions[checkPos];
 
-                    const startCheck = parseInt(document.getElementById('startCheck').value);
                     const checkDate = item.date;
             
                     // Convertir fecha a formato dd/mm/yyyy
