@@ -483,6 +483,9 @@
             // Convertir fecha a formato dd/mm/yyyy
             const date = new Date(checkDate);
             const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            const formattedDay = `${date.getDate().toString().padStart(2, '0')}`;
+            const formattedMonth = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            const formattedYear = `${date.getFullYear()}`;
 
             // Posiciones para cada cheque (ajustadas con margen derecho)
             const chequePositions = [
@@ -524,8 +527,17 @@
                     const pos = chequePositions[checkPos];
                     
                     // Fecha (posición superior derecha, con margen)
+                    //doc.setFontSize(11);
+                    //doc.text(formattedDate, 210 - rightMargin - 5, pos.y - 0, { align: 'right' });
+
                     doc.setFontSize(11);
-                    doc.text(formattedDate, 210 - rightMargin - 5, pos.y - 0, { align: 'right' });
+                    doc.text(formattedDay, 210 - rightMargin - 10, pos.y - 0, { align: 'right' });
+
+                    doc.setFontSize(11);
+                    doc.text(formattedMonth, 210 - rightMargin - 3, pos.y - 0, { align: 'right' });
+
+                    doc.setFontSize(11);
+                    doc.text(formattedYear, 210 - rightMargin + 25, pos.y - 0, { align: 'right' });
                     
                     // Nombre de la persona (línea "PÁGUESE A")
                     doc.setFontSize(12);
