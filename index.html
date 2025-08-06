@@ -483,7 +483,7 @@
 
             // Posiciones para cada cheque (ajustadas con margen derecho)
             const chequePositions = [
-                { y: 22 },   // Primer cheque
+                { y: 20 },   // Primer cheque
                 { y: 92 },  // Segundo cheque  
                 { y: 161 },  // Tercer cheque
                 { y: 231 }   // Cuarto cheque
@@ -541,17 +541,17 @@
                     //doc.text(formattedDate, 210 - rightMargin - 5, pos.y - 0, { align: 'right' });
 
                     doc.setFontSize(11);
-                    doc.text(formattedDay, 210 - rightMargin - 26, pos.y, { align: 'right' });
+                    doc.text(formattedDay, 210 - rightMargin - 22, pos.y, { align: 'right' });
 
                     doc.setFontSize(11);
-                    doc.text(formattedMonth, 210 - rightMargin - 14, pos.y, { align: 'right' });
+                    doc.text(formattedMonth, 210 - rightMargin - 10, pos.y, { align: 'right' });
 
                     doc.setFontSize(11);
-                    doc.text(formattedYear, 210 - rightMargin+2, pos.y, { align: 'right' });
+                    doc.text(formattedYear, 210 - rightMargin+6, pos.y, { align: 'right' });
                     
                     // Nombre de la persona (línea "PÁGUESE A")
                     doc.setFontSize(12);
-                    doc.text(item.name.toUpperCase(), 77, pos.y + 8);
+                    doc.text(item.name.toUpperCase(), 79, pos.y + 8);
                     
                     // Monto en números (lado derecho, con margen)
                     doc.setFontSize(14);
@@ -578,12 +578,12 @@
                         const line2 = wordsText.substring(cutPoint).trim();
                         
                         // Imprimir primera línea
-                        doc.text(line1, 77, pos.y + 15);
+                        doc.text(line1, 79, pos.y + 15);
                         // Imprimir segunda línea
                         doc.text(line2, 65, pos.y + 19);
                     } else {
                         // Texto corto, una sola línea
-                        doc.text(wordsText, 77, pos.y + 15);
+                        doc.text(wordsText, 79, pos.y + 15);
                     }
                     // *** FIN DE LA SEPARACIÓN DE CARACTERES ***
                     
