@@ -555,7 +555,7 @@
                     
                     // Monto en números (lado derecho, con margen)
                     doc.setFontSize(14);
-                    doc.text(`$${item.amount.toLocaleString('es-CL')}.-`, 210 - rightMargin - 5, pos.y - 8, { align: 'right' });
+                    doc.text(`$${item.amount.toLocaleString('es-CL')}.-`, 210 - rightMargin - 5, pos.y - 10, { align: 'right' });
                     
                     // *** SEPARACIÓN DE MONTO EN PALABRAS EN 2 LÍNEAS SI SUPERA 60 CARACTERES ***
                     doc.setFontSize(11);
